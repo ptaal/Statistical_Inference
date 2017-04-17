@@ -1,0 +1,118 @@
+---
+title: "ToothGrowth Data Analysis"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+---
+
+## Synopsis
+In this report, we are working with ToothGrowth dataset in R. Our main goal is to analyze/summarize the dataset, with intention of comparing the confidence interval of tooth growth by supp and dose, and provide conclusion of our new foundings.  
+
+#### 1. Loading the ToothGrowth data and performing some basic exploratory data analyses
+```{r report2.1,echo=TRUE,cache=TRUE}
+# pander package for generating pdf file
+#install.packages("pander")
+#install.packages("dplyr")
+#install.packages("ggplot2")
+library(pander)
+library(dplyr, warn.conflicts = FALSE)
+library(ggplot2)
+```
+  
+Below, we are creating three distinctive plots using dplyr and ggplot2 R packages:
+  
+* Following plot displays a six separated plots by the two variables of supp and three variables of dose. We have also passed a linear model (regression), with the purpose of showing the differences (regression line directions), for the same doses in each supp group (of VC and OJ)  
+```{r report2.2,echo=TRUE,cache=TRUE}
+head(ToothGrowth)
+# below, we are creating a new data frame and adding a id column to it (numbering each set of doses, with numbers from 1 to 10)
+ToothGrowth_DOSE_ID <- as.data.frame(select(ToothGrowth, len, supp, dose) %>% mutate(id = rep(seq(1:10),6)))
+# here, we are creating our plot
+ggplot(ToothGrowth_DOSE_ID, aes(x = len, y = id)) + geom_line() + facet_grid(supp ~ dose) + geom_smooth(method = "lm")  + labs(x = "Tooth Growth Length", y = "Each Different Tooth", title = "Tooth Growth Length by Dose and Supplement - OJ:0.5,1,2 or VC:0.5,1,2")
+```
+  
+* Following plot displays a two separated plots by two variables of supp. Similar to the previous plot, we have also passed a linear model (regression), with the purpose of showing the differences (line direction), for each of the two supp (VC and OJ)  
+```{r report2.3,echo=TRUE,cache=TRUE}
+# below, we are creating a new data frame and adding "id" column to it (numbering each set by supp, with numbers from 1 to 30)
+ToothGrowth_SUPP_ID <- as.data.frame(select(ToothGrowth, len, supp, dose) %>% mutate(id = rep(seq(1:30),2)))
+# here, we are creating our plot
+ggplot(ToothGrowth_SUPP_ID, aes(x = len, y = id)) + geom_line() + facet_grid(. ~ supp) + geom_smooth(method = "lm")  + labs(x = "Tooth Growth Length", y = "Each Different Tooth", title = "Tooth Growth Length by Supplement - Orange Juice (OJ) or Ascorbic Acid (VC)")
+```
+  
+* Following plot displays a three separated plots by three variables of dose. Similar to the previous plot, we have also passed a linear model (regression), with the purpose of showing the differences (line direction), for each of the three dose (0.5, 1.0, and 2.0)
+```{r report2.4,echo=TRUE,cache=TRUE}
+ToothGrowth_DOSE_ID_3 <- as.data.frame(select(ToothGrowth, len, supp, dose) %>% arrange(dose) %>% mutate(id = rep(seq(1:20),3)))
+# here, we are creating our plot
+ggplot(ToothGrowth_DOSE_ID_3, aes(x = len, y = id)) + geom_line() + facet_grid(. ~ dose) + geom_smooth(method = "lm") + labs(x = "Tooth Growth Length", y = "Each Different Tooth", title = "Tooth Growth Length by Dose (0.5, 1.0, 2.0)")
+```
+  
+#### 2. Providing a basic summary of the data 
+  
+Now, we are going to display more information about our ToothGrowth dataset, by using multiple R analysis functions, such as dim(), str(), head(), tail(), and dplyr(summarize).
+```{r report2.5,echo=TRUE,cache=TRUE}
+dim(ToothGrowth)
+str(ToothGrowth)
+head(ToothGrowth)
+tail(ToothGrowth)
+```
+  
+Summary (two rows), grouped by supp, consists of mean, median, sd (standard deviation), variance, minimum value, and maximum value.  
+```{r report2.6,echo=TRUE,cache=TRUE}
+SUMMARY_SUPP <- as.data.frame(select(ToothGrowth_SUPP_ID, len, supp, dose, id) %>% group_by(supp) %>% summarise(mean = mean(len), median = median(len), sd = round(sd(len),2), variance = round(var(len),2), min = min(len), max = max(len)))
+SUMMARY_SUPP
+```
+  
+Summary (six rows), grouped by supp and then dose, consists of mean, median, sd (standard deviation), variance, minimum value, and maximum value.  
+```{r report2.7,echo=TRUE,cache=TRUE}
+SUMMARY_SUPP_DOSE <- as.data.frame(select(ToothGrowth_DOSE_ID, len, supp, dose, id) %>% group_by(supp, dose) %>% summarise(mean = mean(len), median = median(len), sd = round(sd(len),2), variance = round(var(len),2), min = min(len), max = max(len)))
+SUMMARY_SUPP_DOSE
+```
+  
+#### 3. Using confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose   
+
+```{r report2.8,echo=TRUE,cache=TRUE}
+# grouping all the Ascorbic Acid (VC) observations
+supp1 <- head(ToothGrowth_SUPP_ID,30)
+supp1 <- select(supp1,len)
+# grouping all the orange juice (OJ) observations
+supp2 <- tail(ToothGrowth_SUPP_ID,30)
+supp2 <- select(supp2, len)
+```
+  
+The confidence level for supp:  
+```{r report2.9,echo=TRUE,cache=TRUE}
+t.test(supp1,supp2)$conf.int
+```
+  
+
+```{r report2.10,echo=TRUE,cache=TRUE}
+# grouping all the dose levels of 0.5 (to dose1)
+dose1 <- head(ToothGrowth_DOSE_ID_3, 20)
+dose1 <- select(dose1, len)
+# grouping all the dose levels of 1 (to dose2)
+dose2 <- select(ToothGrowth_DOSE_ID_3, len, dose) %>% filter(dose == 1)
+dose2 <- select(dose2, len)
+# grouping all the dose levels of 2 (to dose3)
+dose3 <- tail(ToothGrowth_DOSE_ID_3, 20)
+dose3 <- select(dose3, len)
+```
+  
+The confidence level for dose1 (0.5) and dose2 (1):  
+```{r report2.11,echo=TRUE,cache=TRUE}
+t.test(dose2, dose1)$conf.int
+```
+  
+The confidence level for dose1 (0.5) and dose3 (2):  
+```{r report2.12,echo=TRUE,cache=TRUE}
+t.test(dose3, dose1)$conf.int
+```
+  
+The confidence level for dose2 (1) and dose3 (2):  
+```{r report2.13,echo=TRUE,cache=TRUE}
+t.test(dose3, dose2)$conf.int
+```
+
+
+#### 4. Stating our conclusions and the assumptions needed for our conclusions  
+
+Our conclusion is that, we're assuming for each of our four distinctive confidence intervals, there is a 95% probability that the calculated confidence interval from some future experiment sorounds the true population parameter. For instance, for the dose3 and dose2, the 95% confidence interval is between 3.73 and 8.99, since our data is random and the samples are independent of each others.
