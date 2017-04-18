@@ -4,11 +4,8 @@
 This report investigates the averages of 40 exponentials, by running 1000 simulations and compares it with the Central Limit Theorem.  
 
 ```r
-# pander package for generating pdf file
-#install.packages("pander")
 #install.packages("dplyr")
 #install.packages("ggplot2")
-#library(pander)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 # setting the seed for replication purposes
@@ -31,8 +28,12 @@ expo = NULL
 for (i in 1:r) expo = c(expo, mean(rexp(n, lambda)))
 mean_expo <- mean(expo)
 expo2 <- data.frame(expo)
-g <- qplot(expo2$expo, geom = "histogram", binwidth = .2, main = "Histogram for Exponential Distribution", xlab = "Mean", ylab = "Frequency")
-g + geom_vline(xintercept = 1/lambda, col = "green") + geom_vline(xintercept = mean_expo, col = "red")
+g <- qplot(expo2$expo, geom = "histogram", binwidth = .2, 
+           main = "Histogram for Exponential Distribution", 
+           xlab = "Mean", ylab = "Frequency")
+g <- g + geom_vline(xintercept = 1/lambda, col = "green") +
+    geom_vline(xintercept = mean_expo, col = "red")
+g
 ```
 
 ![](simulation-exercise-6_files/figure-html/report1.2-1.png)<!-- -->
@@ -55,13 +56,14 @@ mean_expo
 ```
 ## [1] 5.026378
 ```
-  
 #### 2. Showing how variable the sample is (via variance) and compare it to the theoretical variance of the distribution  
 
 ```r
 x <- seq(min(expo), max(expo), length = 1000)
 y <- dnorm(x, mean = 1/lambda, sd = (1/lambda/sqrt(n)))
-hist(expo, prob = TRUE, breaks = n, col = "green", main = "Variability of Sample Variance and Theoretical Variance", ylab = "Variance Frequency", xlab = "Mean Range")
+hist(expo, prob = TRUE, breaks = n, col = "green",
+     main = "Variability of Sample Variance and Theoretical 
+     Variance", ylab = "Variance Frequency", xlab = "Mean Range")
 lines(x, y, pch = 19, col = "red", lty = 13)
 ```
 
@@ -72,7 +74,7 @@ As we see in the below plot, the distribution is normal.
 
 ```r
 qqnorm(expo, main = "Normality of the Distribution")
-# using qqline function to better estimate/display the parameters of the normal distribution
+# qqline function to better estimate/display the parameters of the normal distribution
 qqline(expo, col = 3)
 ```
 
