@@ -1,3 +1,5 @@
+*Please also review simulation-exercise-6.md file*
+
 # ToothGrowth Data Analysis
 
 ## Synopsis
